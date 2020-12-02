@@ -255,9 +255,11 @@ class LanguageIDModel(object):
         h = nn.ReLU(h)
         #print("FIRST", h)
         for x in xs[1:]:
-            #print(nn.AddBias(nn.Linear(x, self.w), self.b2))
+            a = nn.AddBias(nn.Linear(x, self.w), self.b2)
             #print(nn.Linear(h, self.wh))
-            h = nn.Add(nn.Linear(x, self.w), nn.Linear(h, self.wh))
+            h = nn.Add(a, nn.Linear(h, self.wh))
+            h = nn.ReLU(h)
+
         return nn.Linear(h,self.w2)
 
     def get_loss(self, xs, y):
@@ -280,4 +282,15 @@ class LanguageIDModel(object):
         """
         Trains the model.
         """
-        "*** YOUR CODE HERE ***"
+        learning_rate = -0.025
+        while 1:
+            for x, y in dataset.iterate_once(50):
+                loss = self.get_loss(x,y)
+                w, b, b2, wh,w2 = nn.gradients(loss, [self.w, self.b, self.b2, self.wh, self.w2])
+                self.w.update(w, learning_rate)
+                self.b.update(b, learning_rate)
+                self.b2.update(b2, learning_rate)
+                self.wh.update(wh, learning_rate)
+                self.w2.update(w2, learning_rate)
+            if dataset.get_validation_accuracy() > 0.89:
+                break
