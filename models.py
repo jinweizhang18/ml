@@ -46,9 +46,18 @@ class PerceptronModel(object):
         """
         Train the perceptron until convergence.
         """
-        for x,y in dataset.iterate_once(1):
-             print(x)
-             print(y)
+        weights = self.get_weights()
+
+        test = 1
+        while (test != 0):
+            test = 0
+            for x,y in dataset.iterate_once(1):
+                y_val = nn.as_scalar(y)
+                prediction = self.get_prediction(x)
+                if prediction != y_val:
+                    test += 1
+                    y_star = prediction * -1
+                    self.get_weights().update(x, y_star)
 
 class RegressionModel(object):
     """
