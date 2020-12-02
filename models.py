@@ -215,7 +215,12 @@ class LanguageIDModel(object):
         self.languages = ["English", "Spanish", "Finnish", "Dutch", "Polish"]
 
         # Initialize your model parameters here
-        "*** YOUR CODE HERE ***"
+        self.learning_rate = -0.25
+        self.w = nn.Parameter(self.num_chars, 225)
+        self.b = nn.Parameter(1, 225)
+        self.b2 = nn.Parameter(1, 225)
+        self.wh = nn.Parameter(225, 225)
+        self.w2 = nn.Parameter(225, 5)
 
     def run(self, xs):
         """
@@ -246,7 +251,14 @@ class LanguageIDModel(object):
             A node with shape (batch_size x 5) containing predicted scores
                 (also called logits)
         """
-        "*** YOUR CODE HERE ***"
+        h = nn.AddBias(nn.Linear(xs[0], self.w), self.b)
+        h = nn.ReLU(h)
+        #print("FIRST", h)
+        for x in xs[1:]:
+            #print(nn.AddBias(nn.Linear(x, self.w), self.b2))
+            #print(nn.Linear(h, self.wh))
+            h = nn.Add(nn.Linear(x, self.w), nn.Linear(h, self.wh))
+        return nn.Linear(h,self.w2)
 
     def get_loss(self, xs, y):
         """
@@ -262,7 +274,7 @@ class LanguageIDModel(object):
             y: a node with shape (batch_size x 5)
         Returns: a loss node
         """
-        "*** YOUR CODE HERE ***"
+        return nn.SoftmaxLoss(self.run(xs), y)
 
     def train(self, dataset):
         """
