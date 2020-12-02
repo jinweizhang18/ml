@@ -67,7 +67,11 @@ class RegressionModel(object):
     """
     def __init__(self):
         # Initialize your model parameters here
-        "*** YOUR CODE HERE ***"
+        self.learning_rate = -0.05
+        self.w = nn.Parameter(1, 100)
+        self.b = nn.Parameter(1, 100)
+        self.w2 = nn.Parameter(100, 1)
+        self.b2 = nn.Parameter(1, 1)
 
     def run(self, x):
         """
@@ -78,7 +82,14 @@ class RegressionModel(object):
         Returns:
             A node with shape (batch_size x 1) containing predicted y-values
         """
-        "*** YOUR CODE HERE ***"
+        # Layer 1
+        vector = nn.Linear(x, self.w)
+        added_bias = nn.AddBias(vector, self.b)
+        layer1_output = nn.ReLU(added_bias)
+        # Layer 2
+        vector2 = nn.Linear(layer1_output, self.w2)
+        added_bias2 = nn.AddBias(vector2, self.b2)
+        return added_bias2
 
     def get_loss(self, x, y):
         """
@@ -90,13 +101,27 @@ class RegressionModel(object):
                 to be used for training
         Returns: a loss node
         """
-        "*** YOUR CODE HERE ***"
+        predicted_y = self.run(x)
+        loss = nn.SquareLoss(predicted_y, y)
+        return loss
 
     def train(self, dataset):
         """
         Trains the model.
         """
-        "*** YOUR CODE HERE ***"
+        test = 1
+        while (test != 0):
+            test = 0
+            for x, y in dataset.iterate_once(20):
+                loss = self.get_loss(x,y)
+                if nn.as_scalar(loss) > 0.02:
+                    test += 1
+                grad_wrt_w, grad_wrt_b, grad_wrt_w2, grad_wrt_b2 = nn.gradients(loss, [self.w, self.b, self.w2, self.b2])
+                self.w.update(grad_wrt_w, self.learning_rate)
+                self.b.update(grad_wrt_b, self.learning_rate)
+                self.w2.update(grad_wrt_w2, self.learning_rate)
+                self.b2.update(grad_wrt_b2, self.learning_rate)
+                #print("y: ", nn.as_scalar(y), "y_pred: ", nn.as_scalar(self.run(x)))
 
 class DigitClassificationModel(object):
     """
